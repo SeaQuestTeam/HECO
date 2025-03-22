@@ -4,7 +4,7 @@
 
 *HECO* (HEre Comes the Oil) is an advanced system for monitoring and forecasting oil dispersion at sea, designed to ensure a swift response to spills caused by accidents. Its main innovation lies in integrating a high-performance computational model with real-time maritime and environmental data, enabling a fast and accurate assessment of pollution impact.
 
-
+**Warning**
 <div style="padding: 10px; border: 1px solid orange; background-color: #fff3cd; color: #856404; border-radius: 5px;">
   <strong>DISCLAIMER</strong> The simuator algorytm is not validated by peer reviewers. This is a <b>Proof of Concept- level product! USE IT ONLY FOR TESTING SCENARIO</b> 
 </div>
@@ -38,6 +38,8 @@ First step compute an oil-spill scenario using wave velocity forecast dataset in
 ![gif](markdown_assets/scatter.gif)
 
 A second step is compute geo-spatial feature to assess impact on Human activity and natural protected areas. Using powerful Python scipt HECO produce in seconds a single-page webmap with animation of spill and some geo-data. Useful for sharing on the web and early alert comunications.
+
+
 ![hecomap](markdown_assets/heco_map_LD.gif)
 
 ### 

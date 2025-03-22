@@ -1,1 +1,8 @@
+# Dataset is stored locally due to large size
 HECO_TEST.nc
+
+# system and python file
+.DS_Store
+.*
+src/
+bin/
