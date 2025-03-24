@@ -510,7 +510,7 @@ def get_sim_info(inputdata):
     return  dt, discrete_spill_steps, volume_per_particle, num_part_i
 
 
-def multiple_spill_release_sim (yaml_file):
+def run (yaml_file):
     '''
     Function that simulates the oil spill for multiple release steps
     usage: output = multiple_spill_release_sim('input.yaml')
