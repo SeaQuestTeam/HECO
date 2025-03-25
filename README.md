@@ -4,6 +4,9 @@
 
 *HECO* (HEere Comes the Oil) is an advanced system for monitoring and forecasting oil dispersion at sea, designed to ensure a rapid response to accidental oil spills. Its main innovation lies in the integration of a high-performance computational model with real-time maritime and environmental data, enabling a rapid and accurate assessment of the impact of pollution.
 
+>[!note]
+>A live example of web map result is available here [heco/heco_map.html](https://seaquestteam.github.io/HECO/heco/heco_map.html)
+
 ### Table of Contents:
 
 1. [Installation](#1-installation)
@@ -68,14 +71,11 @@ A second step is to generate geo-spatial features to assess the impact on human 
 
 ![hecomap](markdown_assets/heco_map_LD.gif)
 
-### 2.1 Fast workflow without Juputer notebook (in 10 STEPS)
+### 2.1 a "Fast track" without Juputer notebook (in 10 STEPS)
 
 A more fast way to use HECO in 10 STEPS is described below:
-
-> STEP 1: Download CMEMS forecasting datasets,or connect using CMEMS Python API 
-> Please after registration go to the product: MEDSEA_ANALYSISFORECAST_PHY - [data.marine.copernicus.eu](https://data.marine.copernicus.eu/product/MEDSEA_ANALYSISFORECAST_PHY_006_013/description). Dataset #id: `cmems_mod_med_phy-cur_anfc_4.2km-2D_PT1H-m`.
 >
->1. Go to the "Data Access" section
+>1. Go to Data Access of MEDSEA_ANALYSISFORECAST_PHY - [data.marine.copernicus.eu](https://data.marine.copernicus.eu/product/MEDSEA_ANALYSISFORECAST_PHY_006_013/description)
 >2. Go to the product `cmems_mod_med_phy-cur_anfc_4.2km-2D_PT1H-m` and click to ["SUBSET->Form"](https://data.marine.copernicus.eu/product/MEDSEA_ANALYSISFORECAST_PHY_006_013/download?dataset=cmems_mod_med_phy-cur_anfc_4.2km-2D_PT1H-m_202411)
 >3. Use the map gui to draw a box for you ROI
 >4. chose Start and End Date (note: forecasting are available for next 8 days)
@@ -93,11 +93,12 @@ A more fast way to use HECO in 10 STEPS is described below:
 > - `spill_release_duration_h:` (min 1) for a continuos spilling scenario, the model discretize spill in single steps.
 > - `time0:` insert the time of oilspill event in format `2025-03-08 00:00:00
 > - `volume_spilled_m3:` insert the estimate volume spilled in entire release duration.
+>
 > 8. Open a python terminal and `import heco`
 > 9. Run the model simulation: `output = heco.run('heco.yaml')`
 > 10. Save output in tabular CSV `output.to_csv('heco_results.csv', index=False)`
 
-The tabular CSV contain the RAW particles data, it is possibile to use it in any GIS platform.
+The tabular CSV contain the RAW particles data, it is possibile to use it in any GIS environment.
 
 ## 3. Contributing
 
