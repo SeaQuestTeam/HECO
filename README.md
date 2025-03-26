@@ -50,7 +50,10 @@ To set up the project, clone the repository and install the required dependencie
 
 ```
 virtualenv heco 
-source bin/activate
+
+source bin/activate # Linux/Mac
+Scripts\activate     # Windows
+
 pip install -r requirements.txt
 ```
 
