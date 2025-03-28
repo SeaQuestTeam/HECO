@@ -6,3 +6,15 @@ HECO_TEST.nc
 .*
 src/
 bin/
+
+#python env
+__pycache__/
+bin/
+lib/
+CACHEDIR.TAG
+etc/
+share/
+pyvenv.cfg
+# python cache
+heco/__pycache__/heco.cpython-311.pyc
+
