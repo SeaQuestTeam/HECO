@@ -95,7 +95,7 @@ A more fast way to use HECO in 10 STEPS is described below:
 > - `sim_timedelta_s:` default 3600 (1h), i. this the step in seconds for each iteration (the same as the .nc dataset timedelta)
 > - `spill_release_duration_h:` Parameter to perform a discrete calculation for a continued spill scenario. a value >1 will perform a distribution of the spilled volume into multiple single instantaneous spills.
 > - `time0:` insert the time of oilspill event in format `2025-03-08 00:00:00`
-> - `volume_spilled_m3:` insert the estimate volume spilled in entire release duration.
+> - `volume_spilled_m3:` insert the estimated volume spilled in entire release duration.
 >
 > 8. Open a python terminal and `import heco`
 > 9. Run the model simulation: `output = heco.run('heco.yaml')`
