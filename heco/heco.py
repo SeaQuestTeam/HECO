@@ -568,15 +568,14 @@ def run (yaml_file):
     sim_duration_h = inputdata['sim_duration_h']
     
     # iteration across multiple istantaneous spills
-    for i in range(discrete_spill_steps):
-        release_step = i
-        time_i = pd.to_datetime(inputdata['time0']) + i*dt
+    for k in range(discrete_spill_steps):
+        release_step = k
+        time_i = pd.to_datetime(inputdata['time0']) + k*dt
         lat0 = inputdata['lat0']
         lon0 = inputdata['lon0']
-        residual_sim_time_h = int(pd.Timedelta(sim_duration_h*3600 -  i*dt.total_seconds(), unit='s').total_seconds()/3600)
+        residual_sim_time_h = int(pd.Timedelta(sim_duration_h*3600 -  k*dt.total_seconds(), unit='s').total_seconds()/3600)
         output = single_spill_step(release_step, residual_sim_time_h, num_part_i, DS, lat0, lon0, time_i, inputdata['sim_diffusion_coeff'], dt)
-        print(f"discrete spill step {i} , release time {time_i}")
-
+        print(f"discrete spill step {k} , release time {time_i}")
     return output
 
 def output_points_toconvexhull_polygons(gdf):
