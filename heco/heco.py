@@ -851,16 +851,19 @@ def create_points_animation(geojson_HECOpoints_path, output_gif_path):
     uniquetimes = gdf['time'].unique()
 
     bounds = gdf.total_bounds
-    ax.set_xlim(bounds[0], bounds[2])
-    ax.set_ylim(bounds[1], bounds[3])
+    # ax.set_xlim(bounds[0], bounds[2])
+    # ax.set_ylim(bounds[1], bounds[3])
+    
 
     subset = gdf[gdf['time'] == gdf['time'].min()]
-    scat = ax.scatter(subset.lon, subset.lat, c='black', s=5)
+    #scat = ax.scatter(subset.lon, subset.lat, c='black', s=5)
 
     def animate(i):
         ax.clear()
         ax.set_xlim(bounds[0], bounds[2])
         ax.set_ylim(bounds[1], bounds[3])
+        ax.set_xlabel('Longitude')
+        ax.set_ylabel('Latitude')
         ax.set_title(f"Time: {gdf['time'].min() + pd.Timedelta(i, unit='h')}")
         subset = gdf[gdf['time'] == gdf['time'].min() + pd.Timedelta(i, unit='h')]
         scat = ax.scatter(subset.lon, subset.lat, c='black', s=5)
