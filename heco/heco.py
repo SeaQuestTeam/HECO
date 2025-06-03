@@ -833,6 +833,76 @@ def create_webmap(HECOpoint_output_gdf_path, EMODnetLayers = True, settingsFile_
     
     return
 
+
+def multitimestamp_plot(output,multiple):
+    '''Plot HECO output at multiple timestamps.
+    Args:
+        output (DataFrame): HECO output data from the command output = heco.run('yaml_file') function.
+        multiple (int): Number of timestamps to plot.
+    Returns:
+        None: Displays the plot.
+    Example usage of the function
+    heco.multitimestamp_plot(output, 6)
+    '''
+    import matplotlib.pyplot as plt
+    from matplotlib.ticker import FuncFormatter
+    import numpy as np
+    import matplotlib.cm as cm
+    import cartopy.crs as ccrs
+    import cartopy.feature as cfeature
+    import ssl
+
+    # prevent SSL error
+    ssl._create_default_https_context = ssl._create_unverified_context
+
+    plotsnumber = multiple
+    time_min = output['time'].min()
+    time_max = output['time'].max()
+    time_delta = (time_max - time_min) / plotsnumber
+    target_timestamps = [time_min + i * time_delta for i in range(plotsnumber)]
+
+    # Find nearest actual timestamps in the dataframe
+    timestamps = []
+    for target_ts in target_timestamps:
+        nearest_idx = (output['time'] - target_ts).abs().idxmin()
+        nearest_ts = output['time'].iloc[nearest_idx]
+        timestamps.append(nearest_ts)
+
+    # Create figure with cartopy projection
+    fig = plt.figure(figsize=(12, 8))
+    ax = fig.add_subplot(1, 1, 1, projection=ccrs.PlateCarree())
+    
+    # Add coastlines
+    ax.coastlines(resolution='50m')
+    ax.add_feature(cfeature.LAND, alpha=0.5)
+    ax.add_feature(cfeature.OCEAN, alpha=0.2)
+    
+    gl = ax.gridlines(draw_labels=True, linewidth=1, color='gray', alpha=0.5, linestyle='--')
+    gl.top_labels = False
+    gl.right_labels = False
+    gl.xlabel_style = {'size': 10, 'color': 'black', 'rotation': 45}
+    gl.ylabel_style = {'size': 10, 'color': 'black', 'rotation': 45}
+   
+    ax.set_title(f'HECO Output at Multiple Timestamps')
+    
+
+    # Generate colors
+    colors = cm.tab10(np.linspace(0, 1, plotsnumber))
+
+    for i, ts in enumerate(timestamps):
+        output_ts = output[output['time'] == ts]
+        sc = ax.scatter(output_ts['lon'], output_ts['lat'], 
+                    c=[colors[i]], s=10, 
+                    label=f'{ts}', alpha=0.7,
+                    transform=ccrs.PlateCarree())
+
+    # Add legend
+    ax.legend(loc='upper right', fontsize='small', markerscale=2, title='Timestamps')
+    plt.tight_layout()
+    plt.show()
+    
+
+
 def create_points_animation(geojson_HECOpoints_path, output_gif_path):
     ''' Function that creates an animation of the points in the geojson file'
     @param geojson_HECOpoints_path: path to the geojson file with the points
@@ -851,16 +921,19 @@ def create_points_animation(geojson_HECOpoints_path, output_gif_path):
     uniquetimes = gdf['time'].unique()
 
     bounds = gdf.total_bounds
-    ax.set_xlim(bounds[0], bounds[2])
-    ax.set_ylim(bounds[1], bounds[3])
+    # ax.set_xlim(bounds[0], bounds[2])
+    # ax.set_ylim(bounds[1], bounds[3])
+    
 
     subset = gdf[gdf['time'] == gdf['time'].min()]
-    scat = ax.scatter(subset.lon, subset.lat, c='black', s=5)
+    #scat = ax.scatter(subset.lon, subset.lat, c='black', s=5)
 
     def animate(i):
         ax.clear()
         ax.set_xlim(bounds[0], bounds[2])
         ax.set_ylim(bounds[1], bounds[3])
+        ax.set_xlabel('Longitude')
+        ax.set_ylabel('Latitude')
         ax.set_title(f"Time: {gdf['time'].min() + pd.Timedelta(i, unit='h')}")
         subset = gdf[gdf['time'] == gdf['time'].min() + pd.Timedelta(i, unit='h')]
         scat = ax.scatter(subset.lon, subset.lat, c='black', s=5)
