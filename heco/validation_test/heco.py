@@ -391,7 +391,7 @@ def save_yaml(inputdata,simsettings, yaml_file_path):
     print(f"Data saved in {yaml_file_path}")
     return
 
-def open_yaml(yaml_file):
+def open_yaml(yaml_file, uo_name='uo', vo_name='vo'):
     ''' Function that opens a yaml file and check the data
     @param yaml_file: path to the yaml file
     @return: data from the yaml file
@@ -407,6 +407,12 @@ def open_yaml(yaml_file):
 
     DS = xr.open_dataset(inputdata['dataset_file_name'])
     print(f"Dataset {inputdata['dataset_file_name']} opened")
+
+    # renaming forcing variables
+    try:
+        DS = DS.rename({vo_name: 'vo', uo_name: 'uo'}) 
+    except:
+        print("ERROR: vo and wo varaibles not found in dataset")
 
     # check lat lon
     latmin = DS.latitude.min()
@@ -426,14 +432,14 @@ def open_yaml(yaml_file):
         pass #print (f"Time of origin spill is IN the dataset domain")
     else: print(f"WARNING: Time of origin spill is OUT of the dataset domain")
 
-    if 'vo' in DS and 'uo' in DS: 
-        pass #print("Found 'v_o' and 'u_o' variables in dataset") 
-    else: 
-        print("WARNING: vo and wo varaibles not found in dataset")
-        uo_name = input("Insert the name of the variable used for X component in Stoke drift \n (Stokes drift U) in the dataset: ")
-        vo_name = input("Insert the name of the variable used for Y component in Stoke drift \n (Stokes drift V) in the dataset: ")
-        DS = DS.rename({vo_name: 'vo', uo_name: 'uo'})
-        print("Renaming variable successful") 
+    # if 'vo' in DS and 'uo' in DS: 
+    #     pass #print("Found 'v_o' and 'u_o' variables in dataset") 
+    # else: 
+    #     print("WARNING: vo and wo varaibles not found in dataset")
+    #     uo_name = input("Insert the name of the variable used for X component in Stoke drift \n (Stokes drift U) in the dataset: ")
+    #     vo_name = input("Insert the name of the variable used for Y component in Stoke drift \n (Stokes drift V) in the dataset: ")
+    #     DS = DS.rename({vo_name: 'vo', uo_name: 'uo'})
+    #     print("Renaming variable successful") 
 
     return inputdata, DS
 
@@ -519,7 +525,7 @@ def get_sim_info(inputdata):
     return  dt, discrete_spill_steps, volume_per_particle, num_part_i
 
 
-def run (yaml_file):
+def run (yaml_file, uo_name = 'uo', vo_name = 'vo'):
     '''
     Function that simulates the oil spill for multiple release steps
     usage: output = multiple_spill_release_sim('input.yaml')
@@ -565,7 +571,7 @@ def run (yaml_file):
         return output
 
     # open DS and retrive info from yaml
-    inputdata, DS = open_yaml(yaml_file)
+    inputdata, DS = open_yaml(yaml_file, uo_name, vo_name)
 
     dt, discrete_spill_steps, volume_per_particle, num_part_i = get_sim_info(inputdata)
     
