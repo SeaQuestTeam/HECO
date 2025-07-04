@@ -430,6 +430,10 @@ def open_yaml(yaml_file):
         pass #print("Found 'v_o' and 'u_o' variables in dataset") 
     else: 
         print("WARNING: vo and wo varaibles not found in dataset")
+        uo_name = input("Insert the name of the variable used for X component in Stoke drift \n (Stokes drift U) in the dataset: ")
+        vo_name = input("Insert the name of the variable used for Y component in Stoke drift \n (Stokes drift V) in the dataset: ")
+        DS = DS.rename({vo_name: 'vo', uo_name: 'uo'})
+        print("Renaming variable successful") 
 
     return inputdata, DS
 
@@ -480,6 +484,11 @@ def lagrangian_iteration(DS, lat,lon,timedate, D,dt):
 
         lon_new, lat_new = from_xy_to_lonlat(x_new, y_new)
         position = Point(lon_new, lat_new)
+        
+        # DEBUG
+        # print each values for debugging
+        # print(f"particle position at {timedate} - x: {lon_new}, y: {lat_new}, u: {u.values}, v: {v.values}, D: {D}, dt: {dt}")
+
         return position
 
 def get_sim_info(inputdata):
@@ -544,6 +553,7 @@ def run (yaml_file):
             for j in range(sim_duration_h): 
                 #print(latitude, longitude, time)
                 position = lagrangian_iteration(DS, latitude, longitude, time, D, dt.total_seconds())
+                # TODO check if position is None or empty, skip the iteration
                 output.loc[len(output)] = [release_step, j, i, time, position.y, position.x]
                 latitude = position.y
                 longitude = position.x

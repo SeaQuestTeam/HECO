@@ -553,6 +553,7 @@ def run (yaml_file):
             for j in range(sim_duration_h): 
                 #print(latitude, longitude, time)
                 position = lagrangian_iteration(DS, latitude, longitude, time, D, dt.total_seconds())
+                # TODO check if position is None or empty, skip the iteration
                 output.loc[len(output)] = [release_step, j, i, time, position.y, position.x]
                 latitude = position.y
                 longitude = position.x
