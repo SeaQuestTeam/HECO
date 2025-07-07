@@ -1,7 +1,7 @@
 input:
   dataset_file_name: med-hcmr-wav-rean-h_cyprus-aug-2021.nc
-  lat0: 35.38639835035695
-  lon0: 34.71804512353289
+  lat0: 35.18750039357967
+  lon0: 34.83333440260448
   sim_diffusion_coeff: 10.0
   sim_duration_h: 72.0
   sim_particles: 100.0
