@@ -1,7 +1,7 @@
 input:
   dataset_file_name: HECO_TEST.nc
-  lat0: 41.2
-  lon0: 9.6
+  lat0: 40.5
+  lon0: 10.5
   sim_diffusion_coeff: 10.0
   sim_duration_h: 72.0
   sim_particles: 100.0

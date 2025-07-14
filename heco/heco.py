@@ -79,7 +79,7 @@ def plot_simple_map (inputdata):
 
     ax.gridlines(draw_labels=True)
 
-    ax.add_image(cimgt.GoogleTiles(style='satellite'), 6)
+    ax.add_image(cimgt.OSM(), 6)
 
     time0 = pd.to_datetime(time0).strftime('%Y-%m-%d %H:%M:%S')
     fig.text(0.5, 1, 'HECO: HEre Comes the Oil', ha='center', va='center', fontsize=12)
