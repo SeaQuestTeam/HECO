@@ -1,0 +1,11 @@
+{
+"type": "FeatureCollection",
+"name": "centroids-distance-matrix",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "ID": "START-SAR-detected", "START-SAR-detected": 0.0, "HECO-test-2": 6418.2075820980481, "HECO-test-1": 5013.4481625617091, "END-SAR-detected": 10324.719528621661 }, "geometry": { "type": "Point", "coordinates": [ 34.922258965490904, 35.447608984726259 ] } },
+{ "type": "Feature", "properties": { "ID": "END-SAR-detected", "START-SAR-detected": 10324.719528621661, "HECO-test-2": 9818.9823008623407, "HECO-test-1": 9256.5402013795883, "END-SAR-detected": 0.0 }, "geometry": { "type": "Point", "coordinates": [ 34.919249314859968, 35.540634130274356 ] } },
+{ "type": "Feature", "properties": { "ID": "HECO-test-1", "START-SAR-detected": 5013.4481625617091, "HECO-test-2": 10409.573312587212, "HECO-test-1": 0.0, "END-SAR-detected": 9256.5402013795883 }, "geometry": { "type": "Point", "coordinates": [ 34.971062179654531, 35.46876239782214 ] } },
+{ "type": "Feature", "properties": { "ID": "HECO-test-2", "START-SAR-detected": 6418.2075820980481, "HECO-test-2": 0.0, "HECO-test-1": 10409.573312587212, "END-SAR-detected": 9818.9823008623407 }, "geometry": { "type": "Point", "coordinates": [ 34.856374747298503, 35.468600481024204 ] } }
+]
+}
