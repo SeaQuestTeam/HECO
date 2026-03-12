@@ -3,6 +3,8 @@ This module contains the functions develped for the HECO Proof of Concept
 author: Gianfranco Di Pietro ~ PhD student at University of Catania
 contributors: Martina Stagnitti, Massimiliano Marino, Elisa Castro, Sofia Nasca
 supervisor: Rosaria Ester Musumeci
+
+version 1.2 - Mar, 12 - 2026
 '''
 
 import matplotlib.pyplot as plt
@@ -33,6 +35,9 @@ from PIL import Image
 from io import BytesIO
 import geopandas as gpd
 import math
+
+# 
+import copernicusmarine 
 
 def plot_simple_map (inputdata):
     '''
@@ -404,15 +409,37 @@ def open_yaml(yaml_file, uo_name='uo', vo_name='vo'):
     # convert timestamp to datetime 
     inputdata['time0'] = pd.to_datetime(inputdata['time0']) # some datetime format are not supported in yaml
 
+    if inputdata['credential_path']:
+        credentialpath = inputdata['credential_path']
+        with open(credentialpath, 'r') as file:
+            credentials = yaml.safe_load(file)
 
-    DS = xr.open_dataset(inputdata['dataset_file_name'])
-    print(f"Dataset {inputdata['dataset_file_name']} opened")
+        try:
+            copernicusmarine.open_dataset(
+                username=credentials["username"],
+                password=credentials["password"],
+                dataset_id='cmems_mod_med_phy-cur_anfc_4.2km-2D_PT1H-m',
+                start_datetime=inputdata['time0']
+            )
+        except Exception as e:
+            raise ValueError(f"Unable to connect using Cmems API: {e}")
+
+        DS = copernicusmarine.open_dataset(
+                username=credentials["username"],
+                password=credentials["password"],
+                dataset_id='cmems_mod_med_phy-cur_anfc_4.2km-2D_PT1H-m',
+                start_datetime=inputdata['time0']
+            )
+        print(f"Access to Cmems data using API successful")
+    else:
+        DS = xr.open_dataset(inputdata['dataset_file_name'])
+        print(f"Dataset {inputdata['dataset_file_name']} opened")
 
     # renaming forcing variables
     try:
         DS = DS.rename({vo_name: 'vo', uo_name: 'uo'}) 
-    except:
-        print("ERROR: vo and wo varaibles not found in dataset")
+    except Exception as e:
+        print(f"ERROR: {e}")
 
     # check lat lon
     latmin = DS.latitude.min()
@@ -420,7 +447,7 @@ def open_yaml(yaml_file, uo_name='uo', vo_name='vo'):
     lonmin = DS.longitude.min()
     lonmax = DS.longitude.max()
     if latmin <= inputdata['lat0'] <= latmax and lonmin <= inputdata['lon0'] <= lonmax:
-           pass #print(f"Latitude and longitude of origin spill are IN the dataset domain")
+        pass #print(f"Latitude and longitude of origin spill are IN the dataset domain")
     else:
             print(f"WARNING: Latitude and longitude of origin spill are OUT of the dataset domain")
 
@@ -431,15 +458,6 @@ def open_yaml(yaml_file, uo_name='uo', vo_name='vo'):
     if timemin <= pd.to_datetime(inputdata['time0']) <= timemax:
         pass #print (f"Time of origin spill is IN the dataset domain")
     else: print(f"WARNING: Time of origin spill is OUT of the dataset domain")
-
-    # if 'vo' in DS and 'uo' in DS: 
-    #     pass #print("Found 'v_o' and 'u_o' variables in dataset") 
-    # else: 
-    #     print("WARNING: vo and wo varaibles not found in dataset")
-    #     uo_name = input("Insert the name of the variable used for X component in Stoke drift \n (Stokes drift U) in the dataset: ")
-    #     vo_name = input("Insert the name of the variable used for Y component in Stoke drift \n (Stokes drift V) in the dataset: ")
-    #     DS = DS.rename({vo_name: 'vo', uo_name: 'uo'})
-    #     print("Renaming variable successful") 
 
     return inputdata, DS
 

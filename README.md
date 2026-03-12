@@ -1,112 +1,96 @@
-![img](markdown_assets/HECO-4.png)
+# 🌊 HECO: HEre Comes the Oil
 
-# HEre Comes the Oil
+**HECO** is an advanced system for monitoring and forecasting oil dispersion at sea. It integrates high-performance computational models with real-time environmental data to provide rapid, accurate impact assessments for accidental spills.
 
-*HECO* (HEere Comes the Oil) is an advanced system for monitoring and forecasting oil dispersion at sea, designed to ensure a rapid response to accidental oil spills. Its main innovation lies in the integration of a high-performance computational model with real-time maritime and environmental data, enabling a rapid and accurate assessment of the impact of pollution.
+> [!CAUTION]
+> **Proof of Concept:** The simulation algorithm is not peer-reviewed. This tool is for **testing and research purposes only.**
 
->[!note]
->A live example of web map result is available here [heco/heco_map.html](https://seaquestteam.github.io/HECO/heco/heco_map.html)
-
-### Table of Contents:
-
-1. [Installation](#1-installation)
-2. [Workflow](#2-workflow)
-
-    2.1 [Fast workflow without Jupyyter notebook](#21-fast-workflow)
-3. [Contributing](#3-contributing)
-4. [Licence](#4-license)
+🔗 **Live Demo:** [View Interactive Web Map](https://seaquestteam.github.io/HECO/heco/heco_map.html)
 
 ---
 
->[!Warning]
-> The simuator algorytm is not validated by peer reviewers.
-> This is a Proof of Concept product! USE IT FOR TESTING PURPOSES ONLY!
+## 🚀 1. Quick Start (EDITO Data Lab)
 
-This project uses the Copernicus Marine Services user credentials (username and password) to access the CMSES dataset API and retrieve ocean current wave variables.
+The easiest way to run HECO is within the **EDITO** cloud environment.
 
-More info about `copernicusmarine` API --> [link](https://help.marine.copernicus.eu/en/articles/8287609-copernicus-marine-toolbox-api-open-a-dataset-or-read-a-dataframe-remotely)
-
-## 1. Installation
-
->[!Note]
-> A very easy way to run HECO is to clone this repo inside of an EDITO data lab!
->
-> 1. Go to [https://datalab.dive.edito.eu](https://datalab.dive.edito.eu) and sing-up or login
->
-> 2. Go to "Service Catalog" and launch a "Jupyter-python-ocean-science" with default configuration (ignore warnings)
->
-> 3. Start the jupyter server with access token gived at launch (copy and past the token password)
->
-> 4. From the Git menu (look for the Git icon on the left), click on 'Clone Repository'.
->
-> 5. Paste the url of this repo and clone, then run the console command `pip install -r requirements.txt`
->
-> 6. Go to notebook `heco/HECO.ipynb` and follow instructions.
-
----
-If you prefer install on your local machine follow these step
-
-To set up the project, clone the repository and install the required dependencies. You can do this by running the following commands from the CLI:
-
-```
-virtualenv heco 
-
-source bin/activate # Linux/Mac
-Scripts\activate     # Windows
-
+1. Log in to [datalab.dive.edito.eu](https://datalab.dive.edito.eu).
+2. In the "Service Catalog," launch **Jupyter-python-ocean-science** (default settings).
+3. Open the Jupyter server using the access token provided at launch.
+4. Use the **Git** menu (left sidebar) to `Clone Repository` using this repo's URL.
+5. Open the terminal and install dependencies:
+```bash
 pip install -r requirements.txt
+
 ```
 
-The file `requirements.txt` contains a list of all package and python dependencies required (and others useful too). The file `heco.py` contains all the functions developed for this tool.
 
-## 2. Workflow
+6. Navigate to `heco/HECO.ipynb` and follow the notebook instructions.
 
-Follow the instruction in the computational notebook [HECO](heco/HECO.ipynb)
+### Local Installation
 
-The procedure is divided into two main steps.
+To run HECO on your machine, clone the repo and set up your environment:
 
-In the first step, an oil spill scenario is calculated using the wave velocity forecast data set in a dispersion-lagrangian model.
+```bash
+virtualenv heco 
+source heco/bin/activate  # Linux/Mac
+# heco\Scripts\activate   # Windows
+pip install -r requirements.txt
 
-![gif](markdown_assets/scatter.gif)
+```
 
-A second step is to generate geo-spatial features to assess the impact on human activities and natural protected areas. Using a powerful Python script, HECO produces a one-page web map with an animation of the spill and some geodata in a matter of seconds. Useful for web sharing and early warning communications.
+---
 
+## 🛠️ 2. Workflow
 
-![hecomap](markdown_assets/heco_map_LD.gif)
+The procedure consists of two main phases:
 
-### 2.1 a "Fast track" without Juputer notebook (in 10 STEPS)
+1. **Simulation:** Calculating the oil spill scenario using a Lagrangian dispersion model powered by Copernicus (CMEMS) wave velocity forecasts.
+2. **Geoprocessing:** Automatically generating a one-page animated web map to assess impacts on human activities and protected natural areas.
 
-A more fast way to use HECO in 10 STEPS is described below:
->
->1. Go to Data Access of MEDSEA_ANALYSISFORECAST_PHY - [data.marine.copernicus.eu](https://data.marine.copernicus.eu/product/MEDSEA_ANALYSISFORECAST_PHY_006_013/description)
->2. Go to the product `cmems_mod_med_phy-cur_anfc_4.2km-2D_PT1H-m` and click to ["SUBSET->Form"](https://data.marine.copernicus.eu/product/MEDSEA_ANALYSISFORECAST_PHY_006_013/download?dataset=cmems_mod_med_phy-cur_anfc_4.2km-2D_PT1H-m_202411)
->3. Use the map gui to draw a box for you ROI
->4. chose Start and End Date (note: forecasting are available for next 8 days)
->5. click "Download" and retrive the `.nc` file
->6. move the file in the project folder (or upload in cloud computing environment storage)
->7. Compile the settings input yaml file, using as template [heco.yaml](heco/heco.yaml), respect the identation and manual entry these values:
->
-> - `dataset_file_name:` insert the local path of the `.nc` file (downloaded before)
-> - `lat0:` insert the latitude of oilspill origin (WGS84)
-> - `lat0:` insert the longitude of oilspill origin (WGS84)
-> - `sim_diffusion_coeff:` Diffusion coefficent (min 1, max 100), default 10
-> - `sim_duration_h:` insert the forecasting simulation in hours
-> - `sim_particles:` the number of lagrangian particles to consider, this value has an impact on computational resources needed
-> - `sim_timedelta_s:` default 3600 (1h), i. this the step in seconds for each iteration (the same as the .nc dataset timedelta)
-> - `spill_release_duration_h:` Parameter to perform a discrete calculation for a continued spill scenario. a value >1 will perform a distribution of the spilled volume into multiple single instantaneous spills.
-> - `time0:` insert the time of oilspill event in format `2025-03-08 00:00:00`
-> - `volume_spilled_m3:` insert the estimated volume spilled in entire release duration.
->
-> 8. Open a python terminal and `import heco`
-> 9. Run the model simulation: `output = heco.run('heco.yaml')`
-> 10. Save output in tabular CSV `output.to_csv('heco_results.csv', index=False)`
+---
 
-The tabular CSV contain the RAW particles data, it is possibile to use it in any GIS environment.
+## ⚡ 3. Fast Track (CLI / Scripting)
 
-## 3. Contributing
+You can bypass the Jupyter notebook and run the model directly via Python using a configuration file.
 
-If you would like to contribute to this project, please fork the repository and submit a pull request with your changes.
+### A. Configuration
 
-## 4. License
+Create a `heco.yaml` file based on this template:
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+| Variable | Unit | Description |
+| --- | --- | --- |
+| `credential_path` | str | Path to YAML file with Copernicus credentials |
+| `lat0` / `lon0` | deg | Latitude/Longitude of the spill origin |
+| `sim_diffusion_coeff` | int | Diffusion coefficient (1-100, default: 10) |
+| `sim_duration_h` | hours | Forecasting simulation length |
+| `sim_particles` | int | Number of Lagrangian particles (impacts performance) |
+| `time0` | date | Event timestamp (`YYYY-MM-DD HH:MM:SS`) |
+| `sim_timedelta_s:`|int| time step in seconds, default 3600 (1h), for each iteration (must be the same as the dataset timeseries)|
+|`spill_release_duration_h:`|int| Parameter to perform a discrete calculation for a continued spill scenario. a value >1 will perform a distribution of the spilled volume into multiple single instantaneous spills|
+|`volume_spilled_m3:`|float| insert the estimated volume spilled in entire release duration|
+| `dataset_file_name`* | str | (Optional) Path to a local `.nc` file |
+
+> [!TIP]
+> **Performance Hack:** For faster computation, download the `.nc` marine currents forecast dataset manually from [Copernicus Marine](https://data.marine.copernicus.eu/product/MEDSEA_ANALYSISFORECAST_PHY_006_013/) and use the `dataset_file_name` parameter instead of API credentials.
+
+### B. Execution
+
+Run the simulation in your Python environment:
+
+```python
+import heco
+
+# 1. Run the model simulation
+output = heco.run('heco.yaml')
+
+# 2. Export raw particle data for GIS
+output.to_csv('heco_results.csv', index=False)
+
+```
+
+---
+
+## 🤝 Contributing & License
+
+* **Contributing:** Please fork the repository and submit a pull request with your changes.
+* **License:** This project is licensed under the **MIT License**: Copyright (c) 2025 Gianfranco Di Pietro, Massimiliano Marino, Martina Stagnitti, Sofia Nasca, Elisa Castro, Rosaria Ester Musumeci - University of Catania - Department of Civil and Architecture Engineering.
