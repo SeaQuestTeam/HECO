@@ -27,7 +27,8 @@ from shapely.geometry import box
 # ── File paths ────────────────────────────────────────────────────────────────
  
 OBS_PATH = Path("results/qgis_comparison/30-AUG-2021-AbouSamra-and-Ai-2024-oilspill-SAR-detection.geojson")
-SIM_PATH = Path("results/qgis_comparison/convex-hull-polygon-TEST-2-2021-08-30_10-36.geojson")
+# SIM_PATH = Path("results/qgis_comparison/convex-hull-polygon-TEST-2-2021-08-30_10-36.geojson")
+SIM_PATH = Path("results/qgis_comparison/convex-hull-polygon-TEST-1-2021-08-30_10-36.geojson")
  
 # UTM zone 36N  (EPSG:32636) — appropriate for the Eastern Mediterranean / Cyprus area
 
