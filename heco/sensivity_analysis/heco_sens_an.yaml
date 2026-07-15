@@ -1,6 +1,6 @@
 input:
-  dataset_file_name: HECO_TEST.nc
-  # credential_path: ../../credentials.yaml
+  # dataset_file_name: HECO_TEST.nc
+  credential_path: ../../../../cmemscredentials.yaml
   lat0: 40.5
   lon0: 10.5
   sim_diffusion_coeff: 10.0
