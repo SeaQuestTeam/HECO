@@ -409,8 +409,9 @@ def open_yaml(yaml_file, uo_name='uo', vo_name='vo'):
     # convert timestamp to datetime 
     inputdata['time0'] = pd.to_datetime(inputdata['time0']) # some datetime format are not supported in yaml
 
-    if inputdata['credential_path']:
-        credentialpath = inputdata['credential_path']
+    credential_path = inputdata.get('credential_path')
+    if credential_path:
+        credentialpath = credential_path
         with open(credentialpath, 'r') as file:
             credentials = yaml.safe_load(file)
 
@@ -629,13 +630,28 @@ def create_webmap(HECOpoint_output_gdf_path, EMODnetLayers = True, settingsFile_
     @param settingsFile: path to the yaml file with the settings used for simulation
     @return: path to the html file with the map
     '''
+    def _resolve_path(path):
+        if path is None:
+            return None
+        if os.path.isabs(path):
+            return path
+        cwd_candidate = os.path.join(os.getcwd(), path)
+        if os.path.exists(cwd_candidate):
+            return cwd_candidate
+        module_candidate = os.path.join(os.path.dirname(__file__), path)
+        if os.path.exists(module_candidate):
+            return module_candidate
+        return cwd_candidate
+
     # from yaml file extract html table with data
-    with open(settingsFile_path, 'r') as f:
+    settings_path = _resolve_path(settingsFile_path)
+    with open(settings_path, 'r') as f:
         data = yaml.safe_load(f)
     inputdata = data['input']
     
     # open GeoDataFrame
-    gdf = gpd.read_file(HECOpoint_output_gdf_path) # must contain Points from HECO simulation
+    gdf_path = _resolve_path(HECOpoint_output_gdf_path)
+    gdf = gpd.read_file(gdf_path) # must contain Points from HECO simulation
 
     # convert points to convex hull polygons
     convex_hull = output_points_toconvexhull_polygons(gdf)
@@ -669,6 +685,8 @@ def create_webmap(HECOpoint_output_gdf_path, EMODnetLayers = True, settingsFile_
 
     # calculate zoom level from lat and lon diff
     def calculate_zoom_level(max_diff):
+        if max_diff is None or max_diff <= 0:
+            return 10
         zoom = math.ceil(8 - math.log2(max_diff))
         return max(2, min(18, zoom))
     zoom_start=calculate_zoom_level(max(lat_diff*4, lon_diff*4))
@@ -856,12 +874,16 @@ def create_webmap(HECOpoint_output_gdf_path, EMODnetLayers = True, settingsFile_
     # add layer control
     folium.LayerControl().add_to(m)
 
-    m.save(output_path)
+    output_path_resolved = _resolve_path(output_path)
+    output_dir = os.path.dirname(output_path_resolved) or '.'
+    os.makedirs(output_dir, exist_ok=True)
+    m.save(output_path_resolved)
 
 
     # save convex hull polygons to GeoJSON
     if savepolygons == True:
-        convex_hull.to_file("heco-polygons.geojson", driver='GeoJSON')
+        polygon_output_path = os.path.join(output_dir, 'heco-polygons.geojson')
+        convex_hull.to_file(polygon_output_path, driver='GeoJSON')
     else:
         pass
     
