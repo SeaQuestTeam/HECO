@@ -487,11 +487,17 @@ def lagrangian_iteration(DS, lat,lon,timedate, D,dt):
         # retrive x,y value from lat,lon
         x, y = from_lonlat_to_xy(lon, lat)
         
-        # retrive wave velocity from dataset
-        u = DS.uo.sel(latitude=lat, longitude=lon, time=timedate, method='nearest')
-        v = DS.vo.sel(latitude=lat, longitude=lon, time=timedate, method='nearest')
-        # if u is NaN value
+        # retrive data from dataset
+        #1. nearest cell
         
+        # u = DS.uo.sel(latitude=lat, longitude=lon, time=timedate, method='nearest')
+        # v = DS.vo.sel(latitude=lat, longitude=lon, time=timedate, method='nearest')
+
+        # Use xarray's native interpolation (handles weights and distances automatically)
+        u = DS.uo.interp(latitude=lat, longitude=lon, time=timedate).item()
+        v = DS.vo.interp(latitude=lat, longitude=lon, time=timedate).item()
+        
+        # if u_interp is None or v_interp is None:
         if u is None or v is None:
             print(f"WARNING: No data available for wave velocity at {lat}, {lon} - {timedate}")
             u = 0
@@ -501,6 +507,8 @@ def lagrangian_iteration(DS, lat,lon,timedate, D,dt):
         # Compute the new position of the oil spill
         x_new = x + u * dt + np.random.normal(0,1)* np.sqrt(2 * D * dt)
         y_new = y + v * dt + np.random.normal(0,1)* np.sqrt(2 * D * dt)
+        # x_new = x + u_interp * dt + np.random.normal(0,1)* np.sqrt(2 * D * dt)
+        # y_new = y + v_interp * dt + np.random.normal(0,1)* np.sqrt(2 * D * dt)
 
         # retrive distance value from x,y
         #dist = (np.sqrt((x_new - x)**2 + (y_new - y)**2)).values
