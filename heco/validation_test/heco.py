@@ -3,6 +3,8 @@ This module contains the functions develped for the HECO Proof of Concept
 author: Gianfranco Di Pietro ~ PhD student at University of Catania
 contributors: Martina Stagnitti, Massimiliano Marino, Elisa Castro, Sofia Nasca
 supervisor: Rosaria Ester Musumeci
+
+version 1.2.2 - Jul, 21 - 2026
 '''
 
 import matplotlib.pyplot as plt
@@ -33,6 +35,9 @@ from PIL import Image
 from io import BytesIO
 import geopandas as gpd
 import math
+
+# 
+import copernicusmarine 
 
 def plot_simple_map (inputdata):
     '''
@@ -79,7 +84,7 @@ def plot_simple_map (inputdata):
 
     ax.gridlines(draw_labels=True)
 
-    ax.add_image(cimgt.GoogleTiles(style='satellite'), 6)
+    ax.add_image(cimgt.OSM(), 6)
 
     time0 = pd.to_datetime(time0).strftime('%Y-%m-%d %H:%M:%S')
     fig.text(0.5, 1, 'HECO: HEre Comes the Oil', ha='center', va='center', fontsize=12)
@@ -404,15 +409,38 @@ def open_yaml(yaml_file, uo_name='uo', vo_name='vo'):
     # convert timestamp to datetime 
     inputdata['time0'] = pd.to_datetime(inputdata['time0']) # some datetime format are not supported in yaml
 
+    credential_path = inputdata.get('credential_path')
+    if credential_path:
+        credentialpath = credential_path
+        with open(credentialpath, 'r') as file:
+            credentials = yaml.safe_load(file)
 
-    DS = xr.open_dataset(inputdata['dataset_file_name'])
-    print(f"Dataset {inputdata['dataset_file_name']} opened")
+        try:
+            copernicusmarine.open_dataset(
+                username=credentials["username"],
+                password=credentials["password"],
+                dataset_id='cmems_mod_med_phy-cur_anfc_4.2km-2D_PT1H-m',
+                start_datetime=inputdata['time0']
+            )
+        except Exception as e:
+            raise ValueError(f"Unable to connect using Cmems API: {e}")
+
+        DS = copernicusmarine.open_dataset(
+                username=credentials["username"],
+                password=credentials["password"],
+                dataset_id='cmems_mod_med_phy-cur_anfc_4.2km-2D_PT1H-m',
+                start_datetime=inputdata['time0']
+            )
+        print(f"Access to Cmems data using API successful")
+    else:
+        DS = xr.open_dataset(inputdata['dataset_file_name'])
+        print(f"Dataset {inputdata['dataset_file_name']} opened")
 
     # renaming forcing variables
     try:
         DS = DS.rename({vo_name: 'vo', uo_name: 'uo'}) 
-    except:
-        print("ERROR: vo and wo varaibles not found in dataset")
+    except Exception as e:
+        print(f"ERROR: {e}")
 
     # check lat lon
     latmin = DS.latitude.min()
@@ -420,7 +448,7 @@ def open_yaml(yaml_file, uo_name='uo', vo_name='vo'):
     lonmin = DS.longitude.min()
     lonmax = DS.longitude.max()
     if latmin <= inputdata['lat0'] <= latmax and lonmin <= inputdata['lon0'] <= lonmax:
-           pass #print(f"Latitude and longitude of origin spill are IN the dataset domain")
+        pass #print(f"Latitude and longitude of origin spill are IN the dataset domain")
     else:
             print(f"WARNING: Latitude and longitude of origin spill are OUT of the dataset domain")
 
@@ -432,18 +460,9 @@ def open_yaml(yaml_file, uo_name='uo', vo_name='vo'):
         pass #print (f"Time of origin spill is IN the dataset domain")
     else: print(f"WARNING: Time of origin spill is OUT of the dataset domain")
 
-    # if 'vo' in DS and 'uo' in DS: 
-    #     pass #print("Found 'v_o' and 'u_o' variables in dataset") 
-    # else: 
-    #     print("WARNING: vo and wo varaibles not found in dataset")
-    #     uo_name = input("Insert the name of the variable used for X component in Stoke drift \n (Stokes drift U) in the dataset: ")
-    #     vo_name = input("Insert the name of the variable used for Y component in Stoke drift \n (Stokes drift V) in the dataset: ")
-    #     DS = DS.rename({vo_name: 'vo', uo_name: 'uo'})
-    #     print("Renaming variable successful") 
-
     return inputdata, DS
 
-def lagrangian_iteration(DS, lat,lon,timedate, D,dt):
+def lagrangian_iteration(DS, lat,lon,timedate, D,dt, rng=None, interpolated=False):
         '''
         Function that simulates the oil spill particle for one time step
         @param dataset: dataset (xarray) from Copernicus Marine Services
@@ -452,6 +471,10 @@ def lagrangian_iteration(DS, lat,lon,timedate, D,dt):
         @param timedate: time of the data in format "YYYY-MM-DDTHH:MM:SS"
         @param D: diffusion coefficient (adimensional)
         @param dt: time step in seconds
+        @param rng: optional NumPy random generator. When omitted, the legacy
+                    global np.random generator is used.
+        @param interpolated: whether to interpolate velocity values from the
+                    dataset using xarray interp().
         ---
         @return: New position of the particle
         '''
@@ -468,9 +491,13 @@ def lagrangian_iteration(DS, lat,lon,timedate, D,dt):
         # retrive x,y value from lat,lon
         x, y = from_lonlat_to_xy(lon, lat)
         
-        # retrive wave velocity from dataset
-        u = DS.uo.sel(latitude=lat, longitude=lon, time=timedate, method='nearest')
-        v = DS.vo.sel(latitude=lat, longitude=lon, time=timedate, method='nearest')
+        # retrieve wave velocity from dataset
+        if interpolated:
+            u = DS.uo.interp(latitude=lat, longitude=lon, time=timedate).item()
+            v = DS.vo.interp(latitude=lat, longitude=lon, time=timedate).item()
+        else:
+            u = DS.uo.sel(latitude=lat, longitude=lon, time=timedate, method='nearest')
+            v = DS.vo.sel(latitude=lat, longitude=lon, time=timedate, method='nearest')
         # if u is NaN value
         
         if u is None or v is None:
@@ -479,9 +506,12 @@ def lagrangian_iteration(DS, lat,lon,timedate, D,dt):
             v = 0
             pass
         
+        # Preserve legacy behaviour unless a local generator is supplied.
+        normal = np.random.normal if rng is None else rng.normal
+
         # Compute the new position of the oil spill
-        x_new = x + u * dt + np.random.normal(0,1)* np.sqrt(2 * D * dt)
-        y_new = y + v * dt + np.random.normal(0,1)* np.sqrt(2 * D * dt)
+        x_new = x + u * dt + normal(0,1)* np.sqrt(2 * D * dt)
+        y_new = y + v * dt + normal(0,1)* np.sqrt(2 * D * dt)
 
         # retrive distance value from x,y
         #dist = (np.sqrt((x_new - x)**2 + (y_new - y)**2)).values
@@ -525,16 +555,30 @@ def get_sim_info(inputdata):
     return  dt, discrete_spill_steps, volume_per_particle, num_part_i
 
 
-def run (yaml_file, uo_name = 'uo', vo_name = 'vo'):
+def run (yaml_file, uo_name = 'uo', vo_name = 'vo', seed=None, rng=None, interpolated=False):
     '''
     Function that simulates the oil spill for multiple release steps
-    usage: output = multiple_spill_release_sim('input.yaml')
+    usage: output = run('input.yaml', seed=42, interpolated=True)
     @param yaml_file: path to the yaml file
+    @param uo_name: name of the zonal-velocity variable in the input dataset
+    @param vo_name: name of the meridional-velocity variable in the input dataset
+    @param seed: optional integer seed used to create a local NumPy generator.
+                 Mutually exclusive with ``rng``.
+    @param rng: optional NumPy Generator or RandomState. It must provide a
+                ``normal`` method and is advanced in place during the run.
+    @param interpolated: whether to interpolate velocities when sampling from the dataset.
     @return: dataframe with the output of the simulation
 
     '''
 
-    def single_spill_step(release_step, sim_duration_h, num_part_i, DS, lat0, lon0, time0, D, dt):
+    if seed is not None and rng is not None:
+        raise ValueError("Provide either seed or rng, not both.")
+    if rng is not None and not hasattr(rng, "normal"):
+        raise TypeError("rng must provide a normal(loc, scale) method.")
+    if rng is None and seed is not None:
+        rng = np.random.default_rng(seed)
+
+    def single_spill_step(release_step, sim_duration_h, num_part_i, DS, lat0, lon0, time0, D, dt, rng, interpolated):
         '''
         Function that simulates the oil spill for one release step.
         usage: output = single_spill_step(release_step, sim_duration_h, num_part_i, DS, lat0, lon0, time0, D, dt)
@@ -547,6 +591,8 @@ def run (yaml_file, uo_name = 'uo', vo_name = 'vo'):
         @param time0: time of the data in format "YYYY-MM-DDTHH:MM:SS"
         @param D: diffusion coefficient (adimensional)
         @param dt: time step in seconds
+        @param rng: NumPy random generator shared by the full simulation
+        @param interpolated: whether to interpolate velocities when sampling from the dataset
         ---
         @return: dataframe with the output of the simulation
 
@@ -558,7 +604,10 @@ def run (yaml_file, uo_name = 'uo', vo_name = 'vo'):
         for i in range(num_part_i): #for all particles
             for j in range(sim_duration_h): 
                 #print(latitude, longitude, time)
-                position = lagrangian_iteration(DS, latitude, longitude, time, D, dt.total_seconds())
+                position = lagrangian_iteration(
+                    DS, latitude, longitude, time, D, dt.total_seconds(), rng=rng,
+                    interpolated=interpolated
+                )
                 # TODO check if position is None or empty, skip the iteration
                 output.loc[len(output)] = [release_step, j, i, time, position.y, position.x]
                 latitude = position.y
@@ -590,7 +639,10 @@ def run (yaml_file, uo_name = 'uo', vo_name = 'vo'):
         lat0 = inputdata['lat0']
         lon0 = inputdata['lon0']
         residual_sim_time_h = int(pd.Timedelta(sim_duration_h*3600 -  k*dt.total_seconds(), unit='s').total_seconds()/3600)
-        output = single_spill_step(release_step, residual_sim_time_h, num_part_i, DS, lat0, lon0, time_i, inputdata['sim_diffusion_coeff'], dt)
+        output = single_spill_step(
+            release_step, residual_sim_time_h, num_part_i, DS, lat0, lon0,
+            time_i, inputdata['sim_diffusion_coeff'], dt, rng, interpolated
+        )
         print(f"discrete spill step {k} , release time {time_i}")
     return output
 
@@ -611,13 +663,28 @@ def create_webmap(HECOpoint_output_gdf_path, EMODnetLayers = True, settingsFile_
     @param settingsFile: path to the yaml file with the settings used for simulation
     @return: path to the html file with the map
     '''
+    def _resolve_path(path):
+        if path is None:
+            return None
+        if os.path.isabs(path):
+            return path
+        cwd_candidate = os.path.join(os.getcwd(), path)
+        if os.path.exists(cwd_candidate):
+            return cwd_candidate
+        module_candidate = os.path.join(os.path.dirname(__file__), path)
+        if os.path.exists(module_candidate):
+            return module_candidate
+        return cwd_candidate
+
     # from yaml file extract html table with data
-    with open(settingsFile_path, 'r') as f:
+    settings_path = _resolve_path(settingsFile_path)
+    with open(settings_path, 'r') as f:
         data = yaml.safe_load(f)
     inputdata = data['input']
     
     # open GeoDataFrame
-    gdf = gpd.read_file(HECOpoint_output_gdf_path) # must contain Points from HECO simulation
+    gdf_path = _resolve_path(HECOpoint_output_gdf_path)
+    gdf = gpd.read_file(gdf_path) # must contain Points from HECO simulation
 
     # convert points to convex hull polygons
     convex_hull = output_points_toconvexhull_polygons(gdf)
@@ -651,6 +718,8 @@ def create_webmap(HECOpoint_output_gdf_path, EMODnetLayers = True, settingsFile_
 
     # calculate zoom level from lat and lon diff
     def calculate_zoom_level(max_diff):
+        if max_diff is None or max_diff <= 0:
+            return 10
         zoom = math.ceil(8 - math.log2(max_diff))
         return max(2, min(18, zoom))
     zoom_start=calculate_zoom_level(max(lat_diff*4, lon_diff*4))
@@ -838,12 +907,16 @@ def create_webmap(HECOpoint_output_gdf_path, EMODnetLayers = True, settingsFile_
     # add layer control
     folium.LayerControl().add_to(m)
 
-    m.save(output_path)
+    output_path_resolved = _resolve_path(output_path)
+    output_dir = os.path.dirname(output_path_resolved) or '.'
+    os.makedirs(output_dir, exist_ok=True)
+    m.save(output_path_resolved)
 
 
     # save convex hull polygons to GeoJSON
     if savepolygons == True:
-        convex_hull.to_file("heco-polygons.geojson", driver='GeoJSON')
+        polygon_output_path = os.path.join(output_dir, 'heco-polygons.geojson')
+        convex_hull.to_file(polygon_output_path, driver='GeoJSON')
     else:
         pass
     
