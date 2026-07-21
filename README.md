@@ -85,7 +85,18 @@ output = heco.run('heco.yaml')
 
 # 2. Export raw particle data for GIS
 output.to_csv('heco_results.csv', index=False)
+```
 
+You can also pass optional reproducibility and interpolation settings to `heco.run()`:
+
+- `seed`: integer seed for a deterministic NumPy random generator used by the diffusion model.
+- `rng`: optional NumPy `Generator` or random state object with a `.normal()` method.
+- `interpolated`: boolean flag; when `True`, `uo` and `vo` are sampled using xarray `.interp()` instead of nearest-neighbor lookup.
+
+Example:
+
+```python
+output = heco.run('heco.yaml', seed=42, interpolated=True)
 ```
 
 ---

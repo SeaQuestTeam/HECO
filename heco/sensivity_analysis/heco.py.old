@@ -4,7 +4,7 @@ author: Gianfranco Di Pietro ~ PhD student at University of Catania
 contributors: Martina Stagnitti, Massimiliano Marino, Elisa Castro, Sofia Nasca
 supervisor: Rosaria Ester Musumeci
 
-version 1.2.2 - Jul, 21 - 2026
+version 1.2 - Mar, 12 - 2026
 '''
 
 import matplotlib.pyplot as plt
@@ -462,7 +462,7 @@ def open_yaml(yaml_file, uo_name='uo', vo_name='vo'):
 
     return inputdata, DS
 
-def lagrangian_iteration(DS, lat,lon,timedate, D,dt, rng=None, interpolated=False):
+def lagrangian_iteration(DS, lat,lon,timedate, D,dt):
         '''
         Function that simulates the oil spill particle for one time step
         @param dataset: dataset (xarray) from Copernicus Marine Services
@@ -471,10 +471,6 @@ def lagrangian_iteration(DS, lat,lon,timedate, D,dt, rng=None, interpolated=Fals
         @param timedate: time of the data in format "YYYY-MM-DDTHH:MM:SS"
         @param D: diffusion coefficient (adimensional)
         @param dt: time step in seconds
-        @param rng: optional NumPy random generator. When omitted, the legacy
-                    global np.random generator is used.
-        @param interpolated: whether to interpolate velocity values from the
-                    dataset using xarray interp().
         ---
         @return: New position of the particle
         '''
@@ -491,27 +487,28 @@ def lagrangian_iteration(DS, lat,lon,timedate, D,dt, rng=None, interpolated=Fals
         # retrive x,y value from lat,lon
         x, y = from_lonlat_to_xy(lon, lat)
         
-        # retrieve wave velocity from dataset
-        if interpolated:
-            u = DS.uo.interp(latitude=lat, longitude=lon, time=timedate).item()
-            v = DS.vo.interp(latitude=lat, longitude=lon, time=timedate).item()
-        else:
-            u = DS.uo.sel(latitude=lat, longitude=lon, time=timedate, method='nearest')
-            v = DS.vo.sel(latitude=lat, longitude=lon, time=timedate, method='nearest')
-        # if u is NaN value
+        # retrive data from dataset
+        #1. nearest cell
         
+        # u = DS.uo.sel(latitude=lat, longitude=lon, time=timedate, method='nearest')
+        # v = DS.vo.sel(latitude=lat, longitude=lon, time=timedate, method='nearest')
+
+        # Use xarray's native interpolation (handles weights and distances automatically)
+        u = DS.uo.interp(latitude=lat, longitude=lon, time=timedate).item()
+        v = DS.vo.interp(latitude=lat, longitude=lon, time=timedate).item()
+        
+        # if u_interp is None or v_interp is None:
         if u is None or v is None:
             print(f"WARNING: No data available for wave velocity at {lat}, {lon} - {timedate}")
             u = 0
             v = 0
             pass
         
-        # Preserve legacy behaviour unless a local generator is supplied.
-        normal = np.random.normal if rng is None else rng.normal
-
         # Compute the new position of the oil spill
-        x_new = x + u * dt + normal(0,1)* np.sqrt(2 * D * dt)
-        y_new = y + v * dt + normal(0,1)* np.sqrt(2 * D * dt)
+        x_new = x + u * dt + np.random.normal(0,1)* np.sqrt(2 * D * dt)
+        y_new = y + v * dt + np.random.normal(0,1)* np.sqrt(2 * D * dt)
+        # x_new = x + u_interp * dt + np.random.normal(0,1)* np.sqrt(2 * D * dt)
+        # y_new = y + v_interp * dt + np.random.normal(0,1)* np.sqrt(2 * D * dt)
 
         # retrive distance value from x,y
         #dist = (np.sqrt((x_new - x)**2 + (y_new - y)**2)).values
@@ -555,30 +552,16 @@ def get_sim_info(inputdata):
     return  dt, discrete_spill_steps, volume_per_particle, num_part_i
 
 
-def run (yaml_file, uo_name = 'uo', vo_name = 'vo', seed=None, rng=None, interpolated=False):
+def run (yaml_file, uo_name = 'uo', vo_name = 'vo'):
     '''
     Function that simulates the oil spill for multiple release steps
-    usage: output = run('input.yaml', seed=42, interpolated=True)
+    usage: output = multiple_spill_release_sim('input.yaml')
     @param yaml_file: path to the yaml file
-    @param uo_name: name of the zonal-velocity variable in the input dataset
-    @param vo_name: name of the meridional-velocity variable in the input dataset
-    @param seed: optional integer seed used to create a local NumPy generator.
-                 Mutually exclusive with ``rng``.
-    @param rng: optional NumPy Generator or RandomState. It must provide a
-                ``normal`` method and is advanced in place during the run.
-    @param interpolated: whether to interpolate velocities when sampling from the dataset.
     @return: dataframe with the output of the simulation
 
     '''
 
-    if seed is not None and rng is not None:
-        raise ValueError("Provide either seed or rng, not both.")
-    if rng is not None and not hasattr(rng, "normal"):
-        raise TypeError("rng must provide a normal(loc, scale) method.")
-    if rng is None and seed is not None:
-        rng = np.random.default_rng(seed)
-
-    def single_spill_step(release_step, sim_duration_h, num_part_i, DS, lat0, lon0, time0, D, dt, rng, interpolated):
+    def single_spill_step(release_step, sim_duration_h, num_part_i, DS, lat0, lon0, time0, D, dt):
         '''
         Function that simulates the oil spill for one release step.
         usage: output = single_spill_step(release_step, sim_duration_h, num_part_i, DS, lat0, lon0, time0, D, dt)
@@ -591,8 +574,6 @@ def run (yaml_file, uo_name = 'uo', vo_name = 'vo', seed=None, rng=None, interpo
         @param time0: time of the data in format "YYYY-MM-DDTHH:MM:SS"
         @param D: diffusion coefficient (adimensional)
         @param dt: time step in seconds
-        @param rng: NumPy random generator shared by the full simulation
-        @param interpolated: whether to interpolate velocities when sampling from the dataset
         ---
         @return: dataframe with the output of the simulation
 
@@ -604,10 +585,7 @@ def run (yaml_file, uo_name = 'uo', vo_name = 'vo', seed=None, rng=None, interpo
         for i in range(num_part_i): #for all particles
             for j in range(sim_duration_h): 
                 #print(latitude, longitude, time)
-                position = lagrangian_iteration(
-                    DS, latitude, longitude, time, D, dt.total_seconds(), rng=rng,
-                    interpolated=interpolated
-                )
+                position = lagrangian_iteration(DS, latitude, longitude, time, D, dt.total_seconds())
                 # TODO check if position is None or empty, skip the iteration
                 output.loc[len(output)] = [release_step, j, i, time, position.y, position.x]
                 latitude = position.y
@@ -639,10 +617,7 @@ def run (yaml_file, uo_name = 'uo', vo_name = 'vo', seed=None, rng=None, interpo
         lat0 = inputdata['lat0']
         lon0 = inputdata['lon0']
         residual_sim_time_h = int(pd.Timedelta(sim_duration_h*3600 -  k*dt.total_seconds(), unit='s').total_seconds()/3600)
-        output = single_spill_step(
-            release_step, residual_sim_time_h, num_part_i, DS, lat0, lon0,
-            time_i, inputdata['sim_diffusion_coeff'], dt, rng, interpolated
-        )
+        output = single_spill_step(release_step, residual_sim_time_h, num_part_i, DS, lat0, lon0, time_i, inputdata['sim_diffusion_coeff'], dt)
         print(f"discrete spill step {k} , release time {time_i}")
     return output
 
