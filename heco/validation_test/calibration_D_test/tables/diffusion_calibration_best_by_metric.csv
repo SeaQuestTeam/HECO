@@ -1,0 +1,5 @@
+metric,criterion,best_value,sim_diffusion_coeff,diffusion_index,score_time,final_hull_path
+SRA,higher is better,0.9626201899546928,77.48322147651007,144,2021-08-30T10:36:07,/Volumes/LaCie/000 - Dottorato UNICT/seaquest_team/HECO/heco/validation_test/calibration_D_test/final_hulls/diffusion_144_scored_hull.geojson
+CI,lower is better,0.0692536800492678,78.48993288590604,146,2021-08-30T10:36:07,/Volumes/LaCie/000 - Dottorato UNICT/seaquest_team/HECO/heco/validation_test/calibration_D_test/final_hulls/diffusion_146_scored_hull.geojson
+Jaccard,higher is better,0.638579984929901,10.033557046979864,10,2021-08-30T10:36:07,/Volumes/LaCie/000 - Dottorato UNICT/seaquest_team/HECO/heco/validation_test/calibration_D_test/final_hulls/diffusion_010_scored_hull.geojson
+DICE,higher is better,0.7794309594929171,10.033557046979864,10,2021-08-30T10:36:07,/Volumes/LaCie/000 - Dottorato UNICT/seaquest_team/HECO/heco/validation_test/calibration_D_test/final_hulls/diffusion_010_scored_hull.geojson

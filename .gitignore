@@ -18,4 +18,5 @@ pyvenv.cfg
 # python cache
 heco/__pycache__/heco.cpython-311.pyc
 
-
+# over 7800 files for calibration
+heco/validation_test/calibration_D_test/input_yaml_files/*

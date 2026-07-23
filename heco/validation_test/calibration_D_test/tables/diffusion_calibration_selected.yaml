@@ -1,0 +1,19 @@
+calibration:
+  parameter: sim_diffusion_coeff
+  selected_value: 41.24161073825504
+  diffusion_index: 72
+  selection_method: lowest equal-weight mean rank across SRA (maximize), CI (minimize),
+    and Jaccard (maximize)
+  dice_usage: reported but excluded from selection because it is a monotonic transformation
+    of Jaccard
+  metrics:
+    SRA: 0.9158715825067244
+    CI: 0.0788760404689593
+    Jaccard: 0.6363821736730869
+    DICE: 0.7777916233890992
+  score_time: '2021-08-30T10:36:07'
+  observed_polygon: /Volumes/LaCie/000 - Dottorato UNICT/seaquest_team/HECO/heco/validation_test/results/qgis_comparison/30-AUG-2021-AbouSamra-and-Ai-2024-oilspill-SAR-detection.geojson
+  selected_hull: /Volumes/LaCie/000 - Dottorato UNICT/seaquest_team/HECO/heco/validation_test/calibration_D_test/final_hulls/diffusion_072_scored_hull.geojson
+  base_seed: 20260721
+  virtual_origins: 52
+  tested_coefficients: 150
