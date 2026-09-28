@@ -1,0 +1,20 @@
+benchmark_volume_m3: 1000.0
+volume_min_m3: 500.0
+volume_max_m3: 2000.0
+n_volume_levels_including_benchmark: 25
+n_sensitivity_volumes: 24
+release_steps: 6
+benchmark_effective_particles: 96
+volume_per_particle_m3: 10.416666666666666
+particle_count_min: 48
+particle_count_max: 192
+n_replicates: 5
+master_seed: 20260803
+replicate_seeds:
+- 367761876
+- 1767922150
+- 1023912954
+- 1190329654
+- 485754607
+projected_crs: EPSG:32632
+interpolated_velocity: false

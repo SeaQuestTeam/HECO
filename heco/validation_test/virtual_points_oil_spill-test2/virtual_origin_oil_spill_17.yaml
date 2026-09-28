@@ -1,0 +1,11 @@
+input:
+  dataset_file_name: med-cmcc-cur-rean-h_1751886654126.nc
+  lat0: 35.43750057523194
+  lon0: 34.75000105771146
+  sim_diffusion_coeff: 20.0
+  sim_duration_h: 20.0
+  sim_particles: 100.0
+  sim_timedelta_s: 3600.0
+  spill_release_duration_h: 1.0
+  time0: '2021-08-29 16:36:07'
+  volume_spilled_m3: 100.0   
