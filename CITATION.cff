@@ -1,0 +1,84 @@
+cff-version: 1.2.0
+message: "If you use this software or cite this paper, please cite it as below."
+title: "HECO: A lightweight CMEMS-based oil-spill risk-assessment tool"
+type: article
+repository-code: "https://github.com/SeaQuestTeam/HECO"
+url: "https://github.com/SeaQuestTeam/HECO"
+authors:
+
+family-names: "Di Pietro"
+given-names: "Gianfranco"
+orcid: "https://orcid.org/0000-0003-1236-0604"
+
+family-names: "Marino"
+given-names: "Massimiliano"
+orcid: "https://orcid.org/0000-0002-8342-0240"
+
+family-names: "Stagnitti"
+given-names: "Martina"
+orcid: "https://orcid.org/0000-0001-8921-5355"
+
+family-names: "Castro"
+given-names: "Elisa"
+orcid: "https://orcid.org/0000-0003-2884-9295"
+
+family-names: "Nasca"
+given-names: "Sofia"
+
+family-names: "Cavallaro"
+given-names: "Luca"
+orcid: "https://orcid.org/0000-0002-9356-7289"
+
+family-names: "Foti"
+given-names: "Enrico"
+orcid: "https://orcid.org/0000-0001-8407-1890"
+
+family-names: "Musumeci"
+given-names: "Rosaria Ester"
+orcid: "https://orcid.org/0000-0002-1022-0571"
+
+preferred-citation:
+type: article
+authors:
+
+family-names: "Di Pietro"
+given-names: "Gianfranco"
+
+family-names: "Marino"
+given-names: "Massimiliano"
+
+family-names: "Stagnitti"
+given-names: "Martina"
+
+family-names: "Castro"
+given-names: "Elisa"
+
+family-names: "Nasca"
+given-names: "Sofia"
+
+family-names: "Cavallaro"
+given-names: "Luca"
+
+family-names: "Foti"
+given-names: "Enrico"
+
+family-names: "Musumeci"
+given-names: "Rosaria Ester"
+title: "HECO: A lightweight CMEMS-based oil-spill risk-assessment tool"
+journal: "Ocean & Coastal Management"
+volume: 282
+start: 108378
+year: 2026
+issn: "0964-5691"
+doi: "10.1016/j.ocecoaman.2026.108378"
+url: "https://www.sciencedirect.com/science/article/pii/S0964569126002875"
+keywords:
+
+"Oil spill forecasting"
+
+"Lagrangian particle dispersion model LPDM"
+
+"Open source tools"
+
+"Marine pollution"
+abstract: "Oil spills pose significant threats to marine ecosystems and coastal economies; therefore, rapid and effective emergency response is critical. Although operational forecasting models can provide highly accurate simulations, they require domain specialists to make decisions about environmental vulnerabilities. This technical barrier creates an accessibility gap that can delay situational awareness during the first hours of an emergency, particularly for local authorities without dedicated expertise. HECO (Here Comes the Oil) is an open-source, Python-based Lagrangian particle dispersion model (LPDM) powered by the Copernicus Marine Environment Monitoring Service (CMEMS). The model was evaluated through a hindcast of the August 2021 Baniyas spill, using successive Sentinel-1 SAR-derived footprints for validation. The best-performing configuration covered 86.9% of the observed area with a Jaccard index of 61.7% and a Dice similarity coefficient of 76.3%, while completing the entire simulation and output-generation workflow in less than 15 min on a standard laptop. The model also demonstrates high robustness to variations in released oil volume and perturbations in spill origin. This shows the model’s significant geometric reliability for rapid hazard mapping during the early stages of an emergency response. HECO is intended for rapid, first-tier surface-hazard assessment by non-specialist users. By lowering the technical barriers to spatial hazard assessment, it enables first responders to rapidly quickly identify safe navigation zones and prioritize coastal protection strategies while awaiting more advanced operational modeling."
